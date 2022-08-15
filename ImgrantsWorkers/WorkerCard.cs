@@ -2,6 +2,8 @@
 using System.Drawing;
 using System;
 
+using System.Runtime.InteropServices;
+
 namespace ImgrantsWorkers
 {
     public class WorkerCard : TableLayoutPanel
@@ -110,8 +112,8 @@ namespace ImgrantsWorkers
             base.Refresh();
             this.nameLabel.Text = Worker.Name;
             this.natLabel.Text = $"({Worker.Nationality})";
-            this.birthdayLabel.Text = Worker.Birthday.ToString();
-            this.upsertDateLabel.Text = Worker.CreatedAt.ToString() + "\n" + Worker.UpdatedAt.ToString();
+            this.birthdayLabel.Text = Worker.Birthday.ToString("yyyy MMMM dd");
+            this.upsertDateLabel.Text = Worker.CreatedAt.ToString("yyyy/MM/dd") + "\n" + Worker.UpdatedAt.ToString("yyyy/MM/dd");
         }
 
         private Label nameLabel = new Label();

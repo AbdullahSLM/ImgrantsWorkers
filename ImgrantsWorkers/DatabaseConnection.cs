@@ -25,13 +25,12 @@ namespace ImgrantsWorkers
 
                     Console.WriteLine(serverName);
                     Settings.saveSeverName(serverName);
+                    Application.Restart();
                 }
                 catch (Exception ex)
                 {
-                    // TODO an error happend
+                    MessageBox.Show("Something wrong happend !!!");
                 }
-
-                Application.Restart();
             }).Start();
         }
     }

@@ -8,8 +8,17 @@ using System.Threading.Tasks;
 using System.Threading;
 
 
+namespace System
+{
+    public delegate void OnComplete<T>(T result);
+}
+
+
 namespace ImgrantsWorkers
 {
+
+
+
     static public class DB
     {
         static public string ServerName = @"PC-WORLD-PC\SQLEXPRESS";
@@ -71,22 +80,27 @@ namespace ImgrantsWorkers
 
 
 
-        static public void InsertWorker(Worker worker)
+        static public void InsertWorker(Worker worker, OnComplete<Worker> onComplete)
         {
-            new Thread(() => {
-                var query = @"INSERT INTO Workers (Name, Birthday, Nationality, CreatedAt, UpdatedAt)
+            new Thread(() =>
+            {
+               worker.CreatedAt = DateTime.Now;
+               worker.UpdatedAt = DateTime.Now;
+               var query = @"INSERT INTO Workers (Name, Birthday, Nationality, CreatedAt, UpdatedAt)
                             VALUES(@Name, @Birthday, @Nationality, @CreatedAt, @UpdatedAt)";
-                using (var cmd = new SqlCommand(query, connection))
-                {
-                    cmd.Parameters.AddWithValue("@Name", worker.Name);
-                    cmd.Parameters.AddWithValue("@Birthday", worker.Birthday);
-                    cmd.Parameters.AddWithValue("@Nationality", worker.Nationality);
-                    cmd.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@UpdatedAt", DateTime.Now);
+               using (var cmd = new SqlCommand(query, connection))
+               {
+                   cmd.Parameters.AddWithValue("@Name", worker.Name);
+                   cmd.Parameters.AddWithValue("@Birthday", worker.Birthday);
+                   cmd.Parameters.AddWithValue("@Nationality", worker.Nationality);
+                   cmd.Parameters.AddWithValue("@CreatedAt", worker.CreatedAt);
+                   cmd.Parameters.AddWithValue("@UpdatedAt", worker.UpdatedAt);
 
-                    cmd.ExecuteNonQuery();
-                }
-            }).Start();
+                   cmd.ExecuteNonQuery();
+               }
+
+               onComplete?.Invoke(worker);
+           }).Start();
         }
 
 
@@ -168,11 +182,12 @@ namespace ImgrantsWorkers
 
 
 
-        static public Worker UpdateWorker(Worker worker)
+        static public void UpdateWorker(Worker worker, OnComplete<Worker> onComplete)
         {
-
-            worker.UpdatedAt = DateTime.Now;
-            var query = $@"UPDATE Workers
+            new Thread(() =>
+            {
+                worker.UpdatedAt = DateTime.Now;
+                var query = $@"UPDATE Workers
                         SET 
                             Name = @Name,
                             Birthday = @Birthday,
@@ -180,18 +195,19 @@ namespace ImgrantsWorkers
                             UpdatedAt = @UpdatedAt
                         WHERE ID = @ID;";
 
-            using (var cmd = new SqlCommand(query, connection))
-            {
-                cmd.Parameters.AddWithValue("@ID", worker.ID);
-                cmd.Parameters.AddWithValue("@Name", worker.Name);
-                cmd.Parameters.AddWithValue("@Birthday", worker.Birthday);
-                cmd.Parameters.AddWithValue("@Nationality", worker.Nationality);
-                cmd.Parameters.AddWithValue("@UpdatedAt", worker.UpdatedAt);
+                using (var cmd = new SqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@ID", worker.ID);
+                    cmd.Parameters.AddWithValue("@Name", worker.Name);
+                    cmd.Parameters.AddWithValue("@Birthday", worker.Birthday);
+                    cmd.Parameters.AddWithValue("@Nationality", worker.Nationality);
+                    cmd.Parameters.AddWithValue("@UpdatedAt", worker.UpdatedAt);
 
-                cmd.ExecuteNonQuery();
+                    cmd.ExecuteNonQuery();
 
-                return worker;
-            }
+                    onComplete?.Invoke(worker);
+                }
+            }).Start();
         }
     }
 }

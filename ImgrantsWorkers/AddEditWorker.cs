@@ -15,6 +15,9 @@ namespace ImgrantsWorkers
 
         public Worker Worker;
 
+        public OnComplete<Worker> onComplete;
+
+
         public AddEditWorker(Worker worker)
         {
             InitializeComponent();
@@ -36,6 +39,12 @@ namespace ImgrantsWorkers
 
         private void saveBtn_Click(object sender, EventArgs e)
         {
+            if(string.IsNullOrEmpty(nameField.Text.Trim()))
+            {
+                MessageBox.Show("Name Field Required !!!");
+                return;
+            }
+
             if(Worker == null)
             {
                 // Add new worker
@@ -43,15 +52,17 @@ namespace ImgrantsWorkers
                 Worker.Name = nameField.Text;
                 Worker.Nationality = natField.Text;
                 Worker.Birthday = birthdayField.Value;
-                DB.InsertWorker(Worker);
+                DB.InsertWorker(Worker, onComplete);
             } else
             {
                 // Updated existing worker
                 Worker.Name = nameField.Text;
                 Worker.Nationality = natField.Text;
                 Worker.Birthday = birthdayField.Value;
-                Worker = DB.UpdateWorker(Worker);
+                DB.UpdateWorker(Worker, onComplete);
             }
+
+            this.DialogResult = DialogResult.OK;
         }
     }
 }

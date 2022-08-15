@@ -49,10 +49,17 @@ namespace ImgrantsWorkers
         {
             var addForm = new AddEditWorker();
 
-            var result = addForm.ShowDialog();
+            addForm.onComplete = (worker) => {
+                Invoke(
+                    (MethodInvoker)(() =>
+                    {
+                        AddNewWorker((Worker)worker);
+                        MainForm_Resize(null, null);
+                    })
+                );
+            };
 
-            if (result == DialogResult.OK)
-                AddNewWorker(addForm.Worker);
+            addForm.ShowDialog();
         }
 
 
@@ -60,24 +67,29 @@ namespace ImgrantsWorkers
 
             EventHandler editHandler = (s, ev) => {
                 var addForm = new AddEditWorker(worker);
-                var result = addForm.ShowDialog();
 
-                if (result == DialogResult.OK)
-                {
-                    foreach (var control in flowLayoutPanel.Controls)
-                    {
-                        if (control is WorkerCard)
+                addForm.onComplete = (editedWorker) => {
+                    Invoke(
+                        (MethodInvoker)(() =>
                         {
-                            var workerCard = (WorkerCard)control;
-                            if (workerCard.Worker == worker)
+                            foreach (var control in flowLayoutPanel.Controls)
                             {
-                                workerCard.Worker = addForm.Worker;
-                                workerCard.Refresh();
-                                break;
+                                if (control is WorkerCard)
+                                {
+                                    var workerCard = (WorkerCard)control;
+                                    if (workerCard.Worker == worker)
+                                    {
+                                        workerCard.Worker = editedWorker;
+                                        workerCard.Refresh();
+                                        break;
+                                    }
+                                }
                             }
-                        }
-                    }
-                }
+                        })
+                    );
+                };
+
+                addForm.ShowDialog();
             };
 
 
@@ -108,10 +120,6 @@ namespace ImgrantsWorkers
             } while (w > 300);
             w -= 6; // Margin
             w -= 18 / n;
-
-            Console.WriteLine($"Width = {flowLayoutPanel.Width}");
-            Console.WriteLine($"n = {n}");
-            Console.WriteLine($"w = {w}");
 
             foreach (Control control in flowLayoutPanel.Controls)
             {
